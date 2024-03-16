@@ -65,11 +65,27 @@ class My_Pod(Pod):
 class Enemie_Pod(Pod):
     pass
 
+class Checkpoint:
+    def __init__(self, pos: Point):
+        self.pos = pos
+
 # Functions
 def print_err(*args, **kwargs) -> None:
     print(*args, file=sys.stderr, **kwargs)
 
-def get_input_and_init_pods(myPod: My_Pod, enemiePod: Enemie_Pod) -> None:
+def add_checkpoint(checkpoints: list[Checkpoint], pos: Point) -> None:
+    for checkpoint in checkpoints:
+        if checkpoint.pos == pos:
+            return
+    checkpoints.append(Checkpoint(pos))
+
+def print_checkpoints(checkpoints: list[Checkpoint]) -> None:
+    id = 0
+    for checkpoint in checkpoints:
+        print_err(id, checkpoint.pos.x, checkpoint.pos.y)
+        id += 1
+
+def get_input_and_init_pods(myPod: My_Pod, enemiePod: Enemie_Pod, checkpoints: list[Checkpoint]) -> None:
     x, y, next_checkpoint_x, next_checkpoint_y, next_checkpoint_dist, next_checkpoint_angle = [int(i) for i in input().split()]
     opponent_x, opponent_y = [int(i) for i in input().split()]
     myPodPosition = Point(x, y)
@@ -80,14 +96,17 @@ def get_input_and_init_pods(myPod: My_Pod, enemiePod: Enemie_Pod) -> None:
     enemiPosition = Point(opponent_x, opponent_y)
     enemiePod.update_pos(enemiPosition)
 
+    add_checkpoint(checkpoints, checkpointPos)
+
 # game loop
 def game_loop() -> None:
     myPod = My_Pod()
     enemiePod = Enemie_Pod()
+    checkpoints = []
     while True:
         # initialisation
-        get_input_and_init_pods(myPod, enemiePod)
-
+        get_input_and_init_pods(myPod, enemiePod, checkpoints)
+        print_checkpoints(checkpoints)
         # game logic
         if myPod.angle == 0 and myPod.dist >= 2000 and not myPod.boost_used:
             myPod.boost()
