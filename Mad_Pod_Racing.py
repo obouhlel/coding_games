@@ -103,7 +103,10 @@ class My_Pod(Pod):
 			self.speed = 100
 
 	def boost(self, checkpoints: list[Checkpoint]):
-		if not self.boost_used and self.pos_dest == self.longest_checkpoint(checkpoints).pos and self.nb_lap > 0 and abs(self.angle) < 10:
+		if not self.boost_used and \
+		self.pos_dest == self.longest_checkpoint(checkpoints).pos and \
+		self.nb_lap > 0 and \
+		abs(self.angle) < 10:
 			self.speed = "BOOST"
 			self.boost_used = True
 
