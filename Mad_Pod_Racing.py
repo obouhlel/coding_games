@@ -20,6 +20,9 @@ class Point:
 
     def __mul__(self, other: 'Point') -> 'Point':
         return Point(self.x * other.x, self.y * other.y)
+    
+    def __eq__(self, other: 'Point') -> bool:
+        return self.x == other.x and self.y == other.y
 
     def dist(self, goal: 'Point') -> int:
         return int(math.sqrt((self.x - goal.x)**2 + (self.y - goal.y)**2))
@@ -32,10 +35,18 @@ class Pod:
 class My_Pod(Pod):
     pos = Point(0, 0)
     pos_dest = Point(0, 0)
+    start_pos = Point(0, 0)
     dist = 0
     angle = 0
     speed = 100
     boost_used = False
+    save_start = False
+    def start_at(self, pos: Point):
+        if not self.save_start:
+            self.start_pos = pos
+            self.save_start = True
+            print_err("Start position saved")
+
     def update_checkpoint(self, pos: Point, dist: int, angle: int):
         self.pos_dest = pos
         self.dist = dist
@@ -87,16 +98,17 @@ def print_checkpoints(checkpoints: list[Checkpoint]) -> None:
 
 def get_input_and_init_pods(myPod: My_Pod, enemiePod: Enemie_Pod, checkpoints: list[Checkpoint]) -> None:
     x, y, next_checkpoint_x, next_checkpoint_y, next_checkpoint_dist, next_checkpoint_angle = [int(i) for i in input().split()]
-    opponent_x, opponent_y = [int(i) for i in input().split()]
     myPodPosition = Point(x, y)
     checkpointPos = Point(next_checkpoint_x, next_checkpoint_y)
+    myPod.start_at(myPodPosition)
     myPod.update_pos(myPodPosition)
     myPod.update_checkpoint(checkpointPos, next_checkpoint_dist, next_checkpoint_angle)
+    add_checkpoint(checkpoints, checkpointPos)
 
+    opponent_x, opponent_y = [int(i) for i in input().split()]
     enemiPosition = Point(opponent_x, opponent_y)
     enemiePod.update_pos(enemiPosition)
 
-    add_checkpoint(checkpoints, checkpointPos)
 
 # game loop
 def game_loop() -> None:
@@ -108,9 +120,6 @@ def game_loop() -> None:
         get_input_and_init_pods(myPod, enemiePod, checkpoints)
         print_checkpoints(checkpoints)
         # game logic
-        if myPod.angle == 0 and myPod.dist >= 2000 and not myPod.boost_used:
-            myPod.boost()
-            continue
         myPod.speed_control()
         myPod.print_info()
         myPod.print()
