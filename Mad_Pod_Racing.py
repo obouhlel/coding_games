@@ -3,6 +3,7 @@ import math
 
 map_size_x = 16000
 map_size_y = 9000
+
 r_pod_colistion = 400
 r_checkpoint = 600
 
@@ -22,7 +23,7 @@ class Point:
         return Point(self.x * other.x, self.y * other.y)
     
     def __eq__(self, other: 'Point') -> bool:
-        return self.x == other.x and self.y == other.y
+        return abs(self.x - other.x) <= r_checkpoint and abs(self.y - other.y) <= r_checkpoint
 
     def dist(self, goal: 'Point') -> int:
         return int(math.sqrt((self.x - goal.x)**2 + (self.y - goal.y)**2))
@@ -36,21 +37,31 @@ class My_Pod(Pod):
     pos = Point(0, 0)
     pos_dest = Point(0, 0)
     start_pos = Point(0, 0)
+    nb_lap = 0
     dist = 0
     angle = 0
     speed = 100
     boost_used = False
     save_start = False
+    checkpoint_reached = False
     def start_at(self, pos: Point):
         if not self.save_start:
             self.start_pos = pos
             self.save_start = True
-            print_err("Start position saved")
 
     def update_checkpoint(self, pos: Point, dist: int, angle: int):
         self.pos_dest = pos
         self.dist = dist
         self.angle = angle
+        if self.dist <= int(r_checkpoint * 1.5):
+            self.checkpoint_reached = True
+        else:
+            self.checkpoint_reached = False
+
+    def lap_done(self, pos: Point):
+        if self.checkpoint_reached and self.start_pos == pos:
+            self.nb_lap += 1
+            print_err("Lap done")
 
     def speed_control(self):
         if abs(self.angle) > 90:
@@ -68,7 +79,7 @@ class My_Pod(Pod):
             print_err("Boost is already used")
 
     def print_info(self):
-        print_err(self.pos.x, self.pos.y, self.pos_dest.x, self.pos_dest.y, self.dist, self.angle, self.boost_used)
+        print_err(self.pos.x, self.pos.y, self.nb_lap, self.checkpoint_reached)
 
     def print(self):
         print(self.pos_dest.x, self.pos_dest.y, self.speed)
@@ -103,6 +114,7 @@ def get_input_and_init_pods(myPod: My_Pod, enemiePod: Enemie_Pod, checkpoints: l
     myPod.start_at(myPodPosition)
     myPod.update_pos(myPodPosition)
     myPod.update_checkpoint(checkpointPos, next_checkpoint_dist, next_checkpoint_angle)
+    myPod.lap_done(checkpointPos)
     add_checkpoint(checkpoints, checkpointPos)
 
     opponent_x, opponent_y = [int(i) for i in input().split()]
