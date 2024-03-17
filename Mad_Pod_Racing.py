@@ -1,11 +1,11 @@
 import sys
 import math
 
-map_size_x = 16000
-map_size_y = 9000
+map_size_x = int(16000)
+map_size_y = int(9000)
 
-r_pod_colistion = 400
-r_checkpoint = 600
+r_pod_colistion = int(400)
+r_checkpoint = int(600)
 
 def print_err(*args, **kwargs) -> None:
 	print(*args, file=sys.stderr, **kwargs)
@@ -15,6 +15,9 @@ class Point:
 	def __init__(self, x: int, y: int):
 		self.x = x
 		self.y = y
+
+	def __str__(self) -> str:
+		return f"({self.x}, {self.y})"
 
 	def __add__(self, other: 'Point') -> 'Point':
 		return Point(self.x + other.x, self.y + other.y)
@@ -40,6 +43,9 @@ class Checkpoint:
 		self.pos = pos
 		self.dist = dist
 
+	def __str__(self) -> str:
+		return f"{self.pos.x} {self.pos.y} {self.dist}"
+
 def add_checkpoint(checkpoints: list[Checkpoint], pos: Point, dist: int) -> None:
 	for checkpoint in checkpoints:
 		if checkpoint.pos == pos:
@@ -55,6 +61,8 @@ def print_checkpoints(checkpoints: list[Checkpoint]) -> None:
 # Pods
 class Pod:
 	pos = Point(0, 0)
+	def __str__(self):
+		return f"{self.pos.x} {self.pos.y}"
 	def update_pos(self, pos: Point):
 		self.pos = pos
 
@@ -72,6 +80,9 @@ class My_Pod(Pod):
 	boost_used = False
 	save_start = False
 	checkpoint_reached = False
+	def __str__(self):
+		return f"{self.pos_dest.x} {self.pos_dest.y} {self.speed}"
+
 	def start_at(self, pos: Point):
 		if not self.save_start:
 			self.start_pos = pos
@@ -111,13 +122,13 @@ class My_Pod(Pod):
 			self.boost_used = True
 
 	def collision_imminent(self, enemiePod: Enemie_Pod) -> bool:
-		return self.pos.dist(enemiePod.pos) <= r_pod_colistion
+		return self.pos.dist(enemiePod.pos) <= (r_pod_colistion)
 
 	def print_info(self):
 		print_err(self.pos.x, self.pos.y, self.nb_lap, self.boost_used)
 
 	def print(self):
-		print(self.pos_dest.x, self.pos_dest.y, self.speed)
+		print(self)
 
 # Functions
 
@@ -148,7 +159,8 @@ def game_loop() -> None:
 		myPod.speed_control()
 		if myPod.collision_imminent(enemiePod):
 			print_err("Collision imminent")
-			myPod.pos_dest = myPod.pos_dest.offset(int(r_pod_colistion * 1.5))
+		else:
+			print_err("No collision imminent")
 		myPod.boost(checkpoints)
 		myPod.print_info()
 		myPod.print()
